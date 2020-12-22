@@ -28,6 +28,7 @@ project(
 )
 
 include(cmake/nrf-ble-driver.cmake)
+include(cmake/source-file-list.cmake)
 
 include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
@@ -35,42 +36,10 @@ if(IS_BIG_ENDIAN)
     message(FATAL_ERROR "Protocol implementation does not support big endian platforms.")
 endif()
 
-# Common source files
-file(GLOB LIB_BASE_C_SRC_FILES "src/common/*.c")
-file(GLOB LIB_BASE_CPP_SRC_FILES "src/common/*.cpp")
-
-file(GLOB LIB_TRANSPORT_C_SRC_FILES "src/common/transport/*.c")
-file(GLOB LIB_TRANSPORT_CPP_SRC_FILES "src/common/transport/*.cpp")
-
-if(WIN32)
-    file(GLOB LIB_PLATFORM_C_SRC_FILES "src/common/platform/win/*.c")
-    file(GLOB LIB_PLATFORM_CPP_SRC_FILES "src/common/platform/win/*.cpp")
-elseif(APPLE)
-    file(GLOB LIB_PLATFORM_C_SRC_FILES "src/common/platform/macos_osx/*.c")
-    file(GLOB LIB_PLATFORM_CPP_SRC_FILES "src/common/platform/macos_osx/*.cpp")
-else()
-    # Assume Linux
-    file(GLOB LIB_PLATFORM_C_SRC_FILES "src/common/platform/linux/*.c")
-    file(GLOB LIB_PLATFORM_CPP_SRC_FILES "src/common/platform/linux/*.cpp")
-endif()
-
-# SDK source files, different per API version
-
-# Newer codecs from nRF5 SDK are backwards compatible to SoftDevice API v3
-file(GLOB_RECURSE LIB_NEWER_SDK_API_COMMON_C_SRC_FILES "src/sd_api_common/sdk/*.c")
-
-foreach(SD_API_VER ${SD_API_VERS})
-    string(TOLOWER ${SD_API_VER} SD_API_VER_L)
-    file(GLOB_RECURSE LIB_SDK_${SD_API_VER}_C_SRC_FILES "src/${SD_API_VER_L}/sdk/*.c")
-    file(GLOB_RECURSE LIB_SDK_${SD_API_VER}_CPP_SRC_FILES "src/${SD_API_VER_L}/*.cpp")
-endforeach(SD_API_VER)
 
 # Set C, CPP and platform source file groups and properties
 foreach(SD_API_VER ${SD_API_VERS})
-    set(LIB_${SD_API_VER}_C_SRC_FILES ${LIB_BASE_C_SRC_FILES}
-                        ${LIB_SDK_${SD_API_VER}_C_SRC_FILES}
-                        ${LIB_TRANSPORT_C_SRC_FILES}
-    )
+    set(LIB_${SD_API_VER}_C_SRC_FILES ${LIB_SDK_${SD_API_VER}_C_SRC_FILES})
 
     if(SD_API_VER STRGREATER "SD_API_V2")
         list(APPEND LIB_${SD_API_VER}_C_SRC_FILES ${LIB_NEWER_SDK_API_COMMON_C_SRC_FILES})

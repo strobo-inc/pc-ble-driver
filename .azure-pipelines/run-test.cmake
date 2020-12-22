@@ -1,4 +1,4 @@
-find_program(NRFC "nrfc" HINTS "C:/")
+find_program(NRFC "nrfc" HINTS "C:/opt/nrf-device-lib/bin" "/opt/nrf-device-lib/bin")
 if(NOT NRFC)
     message(FATAL_ERROR "nrfc not found, tests will not be ran.")
 endif()
@@ -74,6 +74,8 @@ if(NOT RESULT EQUAL 0)
     message(FATAL_ERROR "Result of running nrfc is ${RESULT}")
 endif()
 
+message(STATUS "Output from nrfc:\"${DEVICE_LIST_CONTENT}\"")
+
 string(REGEX REPLACE ";" "\\\\;" DEVICE_LIST_CONTENT "${DEVICE_LIST_CONTENT}")
 string(REGEX REPLACE "\n" ";" DEVICE_LIST_CONTENT "${DEVICE_LIST_CONTENT}")
 
@@ -85,6 +87,7 @@ set(CURRENT_DEVICE "A")
 
 set(BAUDRATE 1000000)
 set(LOG_LEVEL "trace")
+set(DRIVER_LOG_LEVEL "trace")
 set(TEST_REPORTER "junit")
 
 
@@ -119,7 +122,7 @@ message("DEVICE_A: ${DEVICE_A_SERIAL_NUMBER}/${DEVICE_A_COM_PORT}")
 message("DEVICE_B: ${DEVICE_B_SERIAL_NUMBER}/${DEVICE_B_COM_PORT}")
 
 execute_process(
-    COMMAND "${TEST_EXECUTABLE}" --port-a ${DEVICE_A_COM_PORT} --port-b ${DEVICE_B_COM_PORT} --iterations ${ITERATIONS_} --baud-rate ${BAUDRATE} --log-level ${LOG_LEVEL} --hardware-info "hex:${CONNECTIVITY_FIRMWARE},pca:${BOARD},segger_sn:${DEVICE_A_SERIAL_NUMBER},${DEVICE_B_SERIAL_NUMBER}" --reporter ${TEST_REPORTER} --order lex --out "${TEST_OUTPUT_FILE}"
+    COMMAND "${TEST_EXECUTABLE}" --port-a ${DEVICE_A_COM_PORT} --port-b ${DEVICE_B_COM_PORT} --iterations ${ITERATIONS_} --baud-rate ${BAUDRATE} --log-level ${LOG_LEVEL} --driver-log-level ${DRIVER_LOG_LEVEL} --hardware-info "hex:${CONNECTIVITY_FIRMWARE},pca:${BOARD},segger_sn:${DEVICE_A_SERIAL_NUMBER},${DEVICE_B_SERIAL_NUMBER}" --reporter ${TEST_REPORTER} --order lex --out "${TEST_OUTPUT_FILE}"
     RESULT_VARIABLE RESULT
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
