@@ -213,7 +213,9 @@ foreach(SD_API_VER ${SD_API_VERS})
 endforeach(SD_API_VER)
 
 # Set common include directories
-find_path(ASIO_INCLUDE_DIR asio.hpp)
+if(NOT DEFINED ASIO_INCLUDE_DIR)
+    find_path(ASIO_INCLUDE_DIR asio.hpp)
+endif()
 
 # Set per-SD API version include directories and compiler definitions
 foreach(SD_API_VER ${SD_API_VERS})
