@@ -16,6 +16,7 @@ set(LIB_BASE_CPP_SRC_FILES
 )
 
 set(LIB_TRANSPORT_CPP_SRC_FILES 
+    src/common/transport/h4_transport.cpp
     src/common/transport/h5.cpp
     src/common/transport/h5_transport.cpp
     src/common/transport/serialization_transport.cpp

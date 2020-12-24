@@ -79,7 +79,8 @@ class SerializationTransport
     SerializationTransport(SerializationTransport &&)                 = delete;
     SerializationTransport &operator=(SerializationTransport &&) = delete;
 
-    SerializationTransport(H5Transport *dataLinkLayer, uint32_t response_timeout);
+    //任意のTransport classで良いのでは？
+    SerializationTransport(Transport *dataLinkLayer, uint32_t response_timeout);
     ~SerializationTransport();
 
     uint32_t open(const status_cb_t &status_callback, const evt_cb_t &event_callback,
@@ -99,7 +100,7 @@ class SerializationTransport
 
     data_cb_t dataCallback;
 
-    std::shared_ptr<H5Transport> nextTransportLayer;
+    std::shared_ptr<Transport> nextTransportLayer;
     uint32_t responseTimeout;
 
     bool responseReceived;

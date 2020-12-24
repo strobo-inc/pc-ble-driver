@@ -86,6 +86,14 @@ SD_RPC_API physical_layer_t *sd_rpc_physical_layer_create_uart(const char * port
  */
 SD_RPC_API data_link_layer_t *sd_rpc_data_link_layer_create_bt_three_wire(physical_layer_t *physical_layer, uint32_t retransmission_interval);
 
+/**@brief Create a new data link layer.
+ *
+ * @param[in]  physical_layer  The physical layer to use with this data link layer.
+ *
+ * @retval The data link layer or NULL.
+ */
+SD_RPC_API data_link_layer_t *sd_rpc_data_link_layer_create_bt_raw_uart(physical_layer_t *physical_layer);
+
 /**@brief Create a new transport layer.
  *
  * @param[in]  data_link_layer  The data linkk layer to use with this transport.
