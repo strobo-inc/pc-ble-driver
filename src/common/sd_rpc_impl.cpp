@@ -120,7 +120,7 @@ data_link_layer_t *sd_rpc_data_link_layer_create_bt_raw_uart(physical_layer_t *p
 {
     const auto dataLinkLayer = static_cast<data_link_layer_t *>(malloc(sizeof(data_link_layer_t)));
     const auto physicalLayer = static_cast<UartTransport *>(physical_layer->internal);
-    const auto h4 = new H4Transport(physical_layer);
+    const auto h4 = new H4Transport(physicalLayer);
     dataLinkLayer->internal = static_cast<void*>(h4);
     return dataLinkLayer;
 }

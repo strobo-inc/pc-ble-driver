@@ -17,7 +17,7 @@ uint32_t H4Transport::open(const status_cb_t &status_callback, const data_cb_t &
     if(retcode!=NRF_SUCCESS){
         return retcode;
     }
-    data_cb = std::bind(data_handler,this,std::placeholders::_1,std::placeholders::_2);
+    data_cb = std::bind(&H4Transport::data_handler,this,std::placeholders::_1,std::placeholders::_2);
     retcode = next_transport_layer->open(upperStatusCallback,data_cb,upperLogCallback);
     return retcode;
 }
@@ -41,7 +41,7 @@ H4Transport::~H4Transport() noexcept {
 }
 
 void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcept{
-    std::lock_guard<std::mutex>(rx_state_mutex);
+    std::lock_guard<std::mutex>lk(rx_state_mutex);
     int read_ptr=0;
     if(rx_state==RX_STATE_WAIT_HEADER){
         rx_header=data[read_ptr++];
@@ -59,7 +59,7 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
         }
     }
     if(rx_state==RX_STATE_RECEIVING_PAYLOAD){
-        int to_copy = std::min(length-read_ptr,rx_header-rx_counter);
+        int to_copy = std::min((int)(length-read_ptr),(int)(rx_header-rx_counter));
         for(int i=0;i<to_copy;i++){
             rx_packet.push_back(data[read_ptr++]);
         }

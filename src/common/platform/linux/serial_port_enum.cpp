@@ -35,7 +35,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef WITH_UDEV
+
 #include <libudev.h>
+#endif
 
 #include <cassert>
 #include <cstring>
@@ -58,6 +61,7 @@ std::list<SerialPortDesc> EnumSerialPorts()
 {
     // Setup return value
     std::list<SerialPortDesc> devices;
+    #ifdef WITH_UDEV
 
     // Setup udev related variables
     struct udev *udev_ctx = udev_new();
@@ -106,5 +110,6 @@ std::list<SerialPortDesc> EnumSerialPorts()
     udev_enumerate_unref(udev_enum);
     udev_unref(udev_ctx);
 
+    #endif
     return devices;
 }
