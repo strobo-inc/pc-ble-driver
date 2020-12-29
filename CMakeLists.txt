@@ -307,7 +307,7 @@ set(ARCH_SUFFIX "unknown")
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(ARCH_SUFFIX "x86_64")
 else()
-    set(ARCH_SUFFIX "x86_32")
+    set(ARCH_SUFFIX "armeabi")
 endif()
 
 if(APPLE)
