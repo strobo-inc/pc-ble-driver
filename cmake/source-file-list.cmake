@@ -253,3 +253,26 @@ set(LIB_SDK_SD_API_V6_CPP_SRC_FILES
     src/sd_api_v6/ble_gatts_impl.cpp
     src/sd_api_v6/ble_impl.cpp
 )
+
+set(LIB_SDK_SD_API_V7_C_SRC_FILES
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/app_ble_user_mem.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_event.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_evt_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gap_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gap_evt_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gattc_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gattc_evt_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gatts_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_gatts_evt_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_l2cap_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/ble/serializers/ble_l2cap_evt_app.c
+    src/sd_api_v7/sdk/components/serialization/application/codecs/common/conn_systemreset_app.c
+)
+
+set(LIB_SDK_SD_API_V7_CPP_SRC_FILES
+    src/sd_api_v7/ble_gap_impl.cpp
+    src/sd_api_v7/ble_gattc_impl.cpp
+    src/sd_api_v7/ble_gatts_impl.cpp
+    src/sd_api_v7/ble_impl.cpp
+)
