@@ -2,6 +2,7 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 
 H4Transport::H4Transport(UartTransport *nextTransportLayer):
 is_open(false),
@@ -46,10 +47,12 @@ H4Transport::~H4Transport() noexcept {
 }
 
 void print_vec(const std::vector<uint8_t>v){
+    std::ios::fmtflags cur_flags = std::cout.flags();
     for(auto d:v){
-        std::cout<<d<<" ";
+        std::cout<<std::setw(2)<<std::setfill('0')<<std::hex<<(int)d<<" ";
     }
     std::cout<<std::endl;
+    std::cout.flags(cur_flags);
 }
 
 void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcept{
