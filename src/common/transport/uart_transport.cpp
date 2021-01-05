@@ -54,6 +54,7 @@
 
 #include "uart_settings_boost.h"
 #include <asio.hpp>
+#include <iostream>
 
 constexpr auto DELAY_BEFORE_READ_WRITE = std::chrono::milliseconds(200);
 
@@ -103,7 +104,6 @@ struct UartTransport::impl : Transport
             {
                 upperDataCallback(readBufferData, bytesTransferred);
             }
-
             asyncRead(); // Initiate a new read
         }
         else if (errorCode == asio::error::operation_aborted)
@@ -228,6 +228,8 @@ struct UartTransport::impl : Transport
 #endif
     }
 
+
+
     uint32_t open(const status_cb_t &status_callback, const data_cb_t &data_callback,
                   const log_cb_t &log_callback) noexcept
     {
@@ -336,7 +338,7 @@ struct UartTransport::impl : Transport
                     log(SD_RPC_LOG_ERROR, "serial io_context error", e);
                 }
             };
-
+            startRead();
             ioServiceThread = std::make_unique<std::thread>(asioWorker);
         }
         catch (std::exception &ex)
@@ -357,7 +359,7 @@ struct UartTransport::impl : Transport
             return NRF_ERROR_SD_RPC_SERIAL_PORT;
         }
 
-        startRead();
+        
 
         try
         {

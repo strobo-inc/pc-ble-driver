@@ -40,6 +40,7 @@
 #include "adapter_internal.h"
 #include "app_ble_gap.h"
 #include "ble_common.h"
+#include "h4_transport.h"
 #include "h5_transport.h"
 #include "serial_port_enum.h"
 #include "serialization_transport.h"
@@ -114,6 +115,14 @@ physical_layer_t *sd_rpc_physical_layer_create_uart(const char *port_name, uint3
     const auto uart         = new UartTransport(uartSettings);
     physicalLayer->internal = static_cast<void *>(uart);
     return physicalLayer;
+}
+data_link_layer_t *sd_rpc_data_link_layer_create_bt_raw_uart(physical_layer_t *physical_layer)
+{
+    const auto dataLinkLayer = static_cast<data_link_layer_t *>(malloc(sizeof(data_link_layer_t)));
+    const auto physicalLayer = static_cast<UartTransport *>(physical_layer->internal);
+    const auto h4 = new H4Transport(physicalLayer);
+    dataLinkLayer->internal = static_cast<void*>(h4);
+    return dataLinkLayer;
 }
 
 data_link_layer_t *sd_rpc_data_link_layer_create_bt_three_wire(physical_layer_t *physical_layer,

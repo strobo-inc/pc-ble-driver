@@ -47,7 +47,7 @@
 #include <memory>
 #include <sstream>
 
-SerializationTransport::SerializationTransport(H5Transport *dataLinkLayer,
+SerializationTransport::SerializationTransport(Transport *dataLinkLayer,
                                                uint32_t response_timeout)
     : statusCallback(nullptr)
     , eventCallback(nullptr)
@@ -58,7 +58,7 @@ SerializationTransport::SerializationTransport(H5Transport *dataLinkLayer,
     , isOpen(false)
 {
     // SerializationTransport takes ownership of dataLinkLayer provided object
-    nextTransportLayer = std::shared_ptr<H5Transport>(dataLinkLayer);
+    nextTransportLayer = std::shared_ptr<Transport>(dataLinkLayer);
     responseTimeout    = response_timeout;
 }
 
