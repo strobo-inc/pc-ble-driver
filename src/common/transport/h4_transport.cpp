@@ -1,12 +1,15 @@
 #include "h4_transport.h"
 #include <functional>
 #include <algorithm>
+#include <iostream>
 
 H4Transport::H4Transport(UartTransport *nextTransportLayer):
 is_open(false),
 next_transport_layer(nextTransportLayer),
 rx_state(RX_STATE_WAIT_HEADER)
-{}
+{
+    std::cout<<"h4 transport layer created"<<std::endl;
+}
 uint32_t H4Transport::open(const status_cb_t &status_callback, const data_cb_t &data_callback,
                            const log_cb_t &log_callback) noexcept
 {
@@ -15,10 +18,12 @@ uint32_t H4Transport::open(const status_cb_t &status_callback, const data_cb_t &
     }
     auto retcode = Transport::open(status_callback,data_callback,log_callback);
     if(retcode!=NRF_SUCCESS){
+        std::cout<<"h4 trasnport open failed:"<<retcode<<std::endl;
         return retcode;
     }
     data_cb = std::bind(&H4Transport::data_handler,this,std::placeholders::_1,std::placeholders::_2);
     retcode = next_transport_layer->open(upperStatusCallback,data_cb,upperLogCallback);
+    std::cout<<"h4 transport opened:"<<retcode<<std::endl;
     return retcode;
 }
 uint32_t H4Transport::close() noexcept {
@@ -40,9 +45,17 @@ H4Transport::~H4Transport() noexcept {
     delete next_transport_layer;
 }
 
+void print_vec(const std::vector<uint8_t>v){
+    for(auto d:v){
+        std::cout<<d<<" ";
+    }
+    std::cout<<std::endl;
+}
+
 void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcept{
     std::lock_guard<std::mutex>lk(rx_state_mutex);
     int read_ptr=0;
+    std::cout<<"h4 uart rx handler"<<std::endl;
     if(rx_state==RX_STATE_WAIT_HEADER){
         rx_header=data[read_ptr++];
         rx_state=RX_STATE_RECEIVING_HEADER;
@@ -50,6 +63,7 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
     if(rx_state==RX_STATE_RECEIVING_HEADER){
         if(read_ptr<length){
             rx_header|=data[read_ptr++]<<8;
+            std::cout<<"header rx complete:"<<rx_header<<std::endl;
             rx_counter=0;
             rx_packet.clear();
             rx_packet.reserve(rx_header);
@@ -66,6 +80,8 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
         rx_counter+=to_copy;
         if(rx_counter==rx_header){
             //payload complete
+            std::cout<<"rx payload complete"<<std::endl;
+            print_vec(rx_packet);
             rx_state=RX_STATE_WAIT_HEADER;
             upperDataCallback(rx_packet.data(),rx_packet.size());
         }

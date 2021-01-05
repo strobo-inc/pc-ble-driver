@@ -54,6 +54,7 @@
 
 #include "uart_settings_boost.h"
 #include <asio.hpp>
+#include <iostream>
 
 constexpr auto DELAY_BEFORE_READ_WRITE = std::chrono::milliseconds(200);
 
@@ -95,15 +96,17 @@ struct UartTransport::impl : Transport
      */
     void readHandler(const asio::error_code &errorCode, const size_t bytesTransferred)
     {
+        std::cout<<"uart transport readHandler"<<std::endl;
         if (!errorCode)
         {
             const auto readBufferData = readBuffer.data();
 
             if (upperDataCallback)
             {
+                std::cout<<"uart transport pass upper layer"<<std::endl;
                 upperDataCallback(readBufferData, bytesTransferred);
             }
-
+            std::cout<<"uart transport initiate new read"<<std::endl;
             asyncRead(); // Initiate a new read
         }
         else if (errorCode == asio::error::operation_aborted)
@@ -158,6 +161,7 @@ struct UartTransport::impl : Transport
 
     void startRead()
     {
+        std::cout<<"uart_transport startRead"<<std::endl;
         asyncRead();
     }
 
@@ -228,6 +232,95 @@ struct UartTransport::impl : Transport
 #endif
     }
 
+    void dump_termios_bitmask(){
+        std::cout<<"c_cflag:"<<std::endl;
+        std::cout<<"CBAUD:"<<std::hex<<CBAUD<<std::endl;
+        std::cout<<"CSIZE:"<<std::hex<<CSIZE<<std::endl;
+        std::cout<<"CSTOPB:"<<std::hex<<CSTOPB<<std::endl;
+        std::cout<<"CREAD:"<<std::hex<<CREAD<<std::endl;
+        std::cout<<"PARENB:"<<std::hex<<PARENB<<std::endl;
+        std::cout<<"PARODD:"<<std::hex<<PARODD<<std::endl;
+        std::cout<<"HUPCL:"<<std::hex<<HUPCL<<std::endl;
+        std::cout<<"CLOCAL:"<<std::hex<<CLOCAL<<std::endl;
+        std::cout<<"CIBAUD:"<<std::hex<<CIBAUD<<std::endl;
+        std::cout<<"CMSPAR:"<<std::hex<<CMSPAR<<std::endl;
+        std::cout<<"CRTSCTS:"<<std::hex<<CRTSCTS<<std::endl;
+
+        std::cout<<"c_iflag:"<<std::endl;
+        std::cout<<"IGNBRK:"<<std::hex<<IGNBRK<<std::endl;
+        std::cout<<"BRKINT:"<<std::hex<<BRKINT<<std::endl;
+        std::cout<<"IGNPAR:"<<std::hex<<IGNPAR<<std::endl;
+        std::cout<<"PARMRK:"<<std::hex<<PARMRK<<std::endl;
+        std::cout<<"INPCK:"<<std::hex<<INPCK<<std::endl;
+        std::cout<<"ISTRIP:"<<std::hex<<ISTRIP<<std::endl;
+        std::cout<<"INLCR:"<<std::hex<<INLCR<<std::endl;
+        std::cout<<"IGNCR:"<<std::hex<<IGNCR<<std::endl;
+        std::cout<<"ICRNL:"<<std::hex<<ICRNL<<std::endl;
+        std::cout<<"IUCLC:"<<std::hex<<IUCLC<<std::endl;
+        std::cout<<"IXON:"<<std::hex<<IXON<<std::endl;
+        std::cout<<"IXANY:"<<std::hex<<IXANY<<std::endl;
+        std::cout<<"IXOFF:"<<std::hex<<IXOFF<<std::endl;
+
+        std::cout<<"c_oflag:"<<std::endl;
+        std::cout<<"OPOST:"<<std::hex<<OPOST<<std::endl;
+        std::cout<<"OLCUC:"<<std::hex<<OLCUC<<std::endl;
+        std::cout<<"ONLCR:"<<std::hex<<ONLCR<<std::endl;
+        std::cout<<"OCRNL:"<<std::hex<<OCRNL<<std::endl;
+        std::cout<<"ONOCR:"<<std::hex<<ONOCR<<std::endl;
+        std::cout<<"ONLRET:"<<std::hex<<ONLRET<<std::endl;
+        std::cout<<"OFILL:"<<std::hex<<OFILL<<std::endl;
+        std::cout<<"OFDEL:"<<std::hex<<OFDEL<<std::endl;
+        std::cout<<"NLDLY:"<<std::hex<<NLDLY<<std::endl;
+        std::cout<<"CRDLY:"<<std::hex<<CRDLY<<std::endl;
+        std::cout<<"TABDLY:"<<std::hex<<TABDLY<<std::endl;
+        std::cout<<"BSDLY:"<<std::hex<<BSDLY<<std::endl;
+        std::cout<<"VTDLY:"<<std::hex<<VTDLY<<std::endl;
+        std::cout<<"FFDLY:"<<std::hex<<FFDLY<<std::endl;
+
+        std::cout<<"c_cc:"<<std::endl;
+        std::cout<<"VDISCARD:"<<VDISCARD<<std::endl;
+        std::cout<<"VEOF:"<<VEOF<<std::endl;
+        std::cout<<"VEOL:"<<VEOL<<std::endl;
+        std::cout<<"VEOL2:"<<VEOL2<<std::endl;
+        std::cout<<"VERASE:"<<VERASE<<std::endl;
+        std::cout<<"VINTR:"<<VINTR<<std::endl;
+        std::cout<<"VKILL:"<<VKILL<<std::endl;
+        std::cout<<"VLNEXT:"<<VLNEXT<<std::endl;
+        std::cout<<"VMIN:"<<VMIN<<std::endl;
+        std::cout<<"VQUIT:"<<VQUIT<<std::endl;
+        std::cout<<"VREPRINT:"<<VREPRINT<<std::endl;
+        std::cout<<"VSTART:"<<VSTART<<std::endl;
+        std::cout<<"VSTOP:"<<VSTOP<<std::endl;
+        std::cout<<"VSUSP:"<<VSUSP<<std::endl;
+        std::cout<<"VTIME:"<<VTIME<<std::endl;
+        std::cout<<"VWERASE:"<<VWERASE<<std::endl;
+        
+    }
+
+    void dump_config(int fd){
+        dump_termios_bitmask();
+        struct termios ios;
+        int r = tcgetattr(fd,&ios);
+        if(r<0){
+            std::cout<<"tcgetattr fail"<<std::endl;
+            return;
+        }
+        std::cout<<"c_cflag:"<<std::hex<<ios.c_cflag<<std::endl;
+        std::cout<<"c_iflag:"<<std::hex<<ios.c_iflag<<std::endl;
+        std::cout<<"c_lflag:"<<std::hex<<ios.c_lflag<<std::endl;
+        std::cout<<"c_oflag:"<<std::hex<<ios.c_oflag<<std::endl;
+        std::cout<<"c_cc:";
+        for(int i=0;i<NCCS;i++){
+            std::cout<<"["<<i<<"]="<<std::hex<<(int)ios.c_cc[i]<<",";
+        }
+        std::cout<<std::endl;
+
+        auto ispeed = cfgetispeed(&ios);
+        auto ospeed = cfgetospeed(&ios);
+        std::cout<<"ispeed="<<ispeed<<",ospeed="<<ospeed<<std::endl;
+
+    }
+
     uint32_t open(const status_cb_t &status_callback, const data_cb_t &data_callback,
                   const log_cb_t &log_callback) noexcept
     {
@@ -283,6 +376,7 @@ struct UartTransport::impl : Transport
             }
 #endif
 
+            dump_config(serialPort->native_handle());
             // Wait a bit before making the device available since there are problems
             // if data is sent right after open.
             //
@@ -320,6 +414,7 @@ struct UartTransport::impl : Transport
             const auto asioWorker = [&]() {
                 try
                 {
+                    std::cout<<"io service thread started"<<std::endl;
                     // If ioService has ran before it needs to be restarted
                     if (ioService->stopped())
                     {
@@ -336,7 +431,7 @@ struct UartTransport::impl : Transport
                     log(SD_RPC_LOG_ERROR, "serial io_context error", e);
                 }
             };
-
+            startRead();
             ioServiceThread = std::make_unique<std::thread>(asioWorker);
         }
         catch (std::exception &ex)
@@ -357,7 +452,7 @@ struct UartTransport::impl : Transport
             return NRF_ERROR_SD_RPC_SERIAL_PORT;
         }
 
-        startRead();
+        
 
         try
         {
