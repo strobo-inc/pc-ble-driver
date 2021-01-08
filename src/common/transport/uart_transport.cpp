@@ -98,12 +98,14 @@ struct UartTransport::impl : Transport
     {
         if (!errorCode)
         {
+            std::cout<<"uart read handler"<<std::endl;
             const auto readBufferData = readBuffer.data();
 
             if (upperDataCallback)
             {
                 upperDataCallback(readBufferData, bytesTransferred);
             }
+            std::cout<<"start new read"<<std::endl;
             asyncRead(); // Initiate a new read
         }
         else if (errorCode == asio::error::operation_aborted)

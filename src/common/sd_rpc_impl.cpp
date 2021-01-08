@@ -139,7 +139,7 @@ transport_layer_t *sd_rpc_transport_layer_create(data_link_layer_t *data_link_la
                                                  uint32_t response_timeout)
 {
     const auto transportLayer = static_cast<transport_layer_t *>(malloc(sizeof(transport_layer_t)));
-    const auto dataLinkLayer  = static_cast<H5Transport *>(data_link_layer->internal);
+    const auto dataLinkLayer  = static_cast<Transport *>(data_link_layer->internal);
     const auto serialization  = new SerializationTransport(dataLinkLayer, response_timeout);
     transportLayer->internal  = serialization;
     return transportLayer;

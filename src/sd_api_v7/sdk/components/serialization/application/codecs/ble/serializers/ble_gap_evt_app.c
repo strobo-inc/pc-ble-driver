@@ -38,41 +38,35 @@
  *
  */
 #include "ble_gap_evt_app.h"
-#include "ble_serialization.h"
 #include "app_util.h"
-#include "app_ble_gap_sec_keys.h"
+#include "app_ble_gap.h"
 #include "ble_gap_struct_serialization.h"
+#include "ble_serialization.h"
 #include "ble_struct_serialization.h"
 #include "cond_field_serialization.h"
 #include <string.h>
 
-extern ser_ble_gap_app_keyset_t m_app_keys_table[];
 
 #ifndef S112
-uint32_t ble_gap_evt_adv_report_dec(uint8_t const * const p_buf,
-                                    uint32_t              packet_len,
-                                    ble_evt_t * const     p_event,
-                                    uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_adv_report_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                    ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_ADV_REPORT, gap, adv_report);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
 
 #if defined(NRF_SD_BLE_API_VERSION) && NRF_SD_BLE_API_VERSION >= 6
-    //get buffer stored during scan start.
+    // get buffer stored during scan start.
     app_ble_gap_scan_data_unset(false);
 #endif
     SER_PULL_FIELD(&p_event->evt.gap_evt.params.adv_report, ble_gap_evt_adv_report_t_dec);
 
-
     SER_EVT_DEC_END;
 }
-#endif //!S112
+#endif //! S112
 
-uint32_t ble_gap_evt_auth_key_request_dec(uint8_t const * const p_buf,
-                                          uint32_t              packet_len,
-                                          ble_evt_t * const     p_event,
-                                          uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_auth_key_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                          ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_AUTH_KEY_REQUEST, gap, auth_key_request);
 
@@ -83,12 +77,9 @@ uint32_t ble_gap_evt_auth_key_request_dec(uint8_t const * const p_buf,
 }
 
 
-extern ser_ble_gap_app_keyset_t m_app_keys_table[];
 
-uint32_t ble_gap_evt_auth_status_dec(uint8_t const * const p_buf,
-                                     uint32_t              packet_len,
-                                     ble_evt_t * const     p_event,
-                                     uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_auth_status_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                     ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_AUTH_STATUS, gap, auth_status);
 
@@ -97,38 +88,38 @@ uint32_t ble_gap_evt_auth_status_dec(uint8_t const * const p_buf,
 
     // keyset is an extension of standard event data - used to synchronize keys at application
     uint32_t conn_index;
-    err_code = app_ble_gap_sec_context_find(p_event->evt.gap_evt.conn_handle, &conn_index);//app_ble_gap_sec_keys_find(p_event->evt.gap_evt.conn_handle, &conn_index);
+    err_code = app_ble_gap_sec_keys_find(p_event->evt.gap_evt.conn_handle, &conn_index);
     if (err_code == NRF_SUCCESS)
     {
-        SER_PULL_FIELD(&(m_app_keys_table[conn_index].keyset), ble_gap_sec_keyset_t_dec);//replace get key function call
+        ble_gap_sec_keyset_t *keyset;
+        err_code = app_ble_gap_sec_keys_get(conn_index, &keyset);
+        SER_ASSERT(err_code == NRF_SUCCESS, err_code);
 
-        err_code = app_ble_gap_sec_context_destroy(p_event->evt.gap_evt.conn_handle);//app_ble_gap_sec_keys_storage_destroy(p_event->evt.gap_evt.conn_handle);
+        SER_PULL_FIELD(keyset, ble_gap_sec_keyset_t_dec); // replace get key function call
+
+        err_code = app_ble_gap_sec_keys_storage_destroy(p_event->evt.gap_evt.conn_handle);
         SER_ASSERT(err_code == NRF_SUCCESS, err_code);
     }
 
     SER_EVT_DEC_END;
 }
 
-
-uint32_t ble_gap_evt_conn_param_update_dec(uint8_t const * const p_buf,
-                                           uint32_t              packet_len,
-                                           ble_evt_t * const     p_event,
-                                           uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_conn_param_update_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                           ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_CONN_PARAM_UPDATE, gap, conn_param_update);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.conn_param_update, ble_gap_evt_conn_param_update_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.conn_param_update,
+                   ble_gap_evt_conn_param_update_t_dec);
 
     SER_EVT_DEC_END;
 }
 
-
 #ifndef S112
-uint32_t ble_gap_evt_conn_param_update_request_dec(uint8_t const * const p_buf,
-                                                   uint32_t              packet_len,
-                                                   ble_evt_t * const     p_event,
-                                                   uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_conn_param_update_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                                   ble_evt_t *const p_event,
+                                                   uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST, gap, conn_param_update_request);
 
@@ -140,10 +131,8 @@ uint32_t ble_gap_evt_conn_param_update_request_dec(uint8_t const * const p_buf,
 }
 #endif
 
-uint32_t ble_gap_evt_conn_sec_update_dec(uint8_t const * const p_buf,
-                                         uint32_t              packet_len,
-                                         ble_evt_t * const     p_event,
-                                         uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_conn_sec_update_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                         ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_CONN_SEC_UPDATE, gap, conn_sec_update);
 
@@ -153,10 +142,8 @@ uint32_t ble_gap_evt_conn_sec_update_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_connected_dec(uint8_t const * const p_buf,
-                                   uint32_t              packet_len,
-                                   ble_evt_t * const     p_event,
-                                   uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_connected_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                   ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_CONNECTED, gap, connected);
 
@@ -166,11 +153,8 @@ uint32_t ble_gap_evt_connected_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-
-uint32_t ble_gap_evt_disconnected_dec(uint8_t const * const p_buf,
-                                      uint32_t              packet_len,
-                                      ble_evt_t * const     p_event,
-                                      uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_disconnected_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                      ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_DISCONNECTED, gap, disconnected);
 
@@ -180,10 +164,8 @@ uint32_t ble_gap_evt_disconnected_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_key_pressed_dec(uint8_t const * const p_buf,
-                                   uint32_t              packet_len,
-                                   ble_evt_t * const     p_event,
-                                   uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_key_pressed_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                     ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_KEY_PRESSED, gap, key_pressed);
 
@@ -193,11 +175,8 @@ uint32_t ble_gap_evt_key_pressed_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-
-uint32_t ble_gap_evt_lesc_dhkey_request_dec(uint8_t const * const p_buf,
-                                            uint32_t              packet_len,
-                                            ble_evt_t * const     p_event,
-                                            uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_lesc_dhkey_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                            ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_LESC_DHKEY_REQUEST, gap, lesc_dhkey_request);
 
@@ -206,10 +185,13 @@ uint32_t ble_gap_evt_lesc_dhkey_request_dec(uint8_t const * const p_buf,
 
     // keyset is an extension of standard event data - used to synchronize keys at application
     uint32_t conn_index;
-    err_code = app_ble_gap_sec_context_find(p_event->evt.gap_evt.conn_handle, &conn_index);
+    err_code = app_ble_gap_sec_keys_find(p_event->evt.gap_evt.conn_handle, &conn_index);
     SER_ASSERT(err_code == NRF_SUCCESS, err_code);
-    p_event->evt.gap_evt.params.lesc_dhkey_request.p_pk_peer = m_app_keys_table[conn_index].keyset.keys_peer.p_pk;
-    SER_PULL_COND(&p_event->evt.gap_evt.params.lesc_dhkey_request.p_pk_peer, ble_gap_lesc_p256_pk_t_dec);
+    ble_gap_sec_keyset_t*keyset;
+    err_code = app_ble_gap_sec_keys_get(conn_index, &keyset);
+    p_event->evt.gap_evt.params.lesc_dhkey_request.p_pk_peer = keyset->keys_peer.p_pk;
+    SER_PULL_COND(&p_event->evt.gap_evt.params.lesc_dhkey_request.p_pk_peer,
+                  ble_gap_lesc_p256_pk_t_dec);
 
     SER_PULL_uint8(&ser_data);
     p_event->evt.gap_evt.params.lesc_dhkey_request.oobd_req = ser_data & 0x01;
@@ -217,14 +199,10 @@ uint32_t ble_gap_evt_lesc_dhkey_request_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
+#define PASSKEY_LEN sizeof(p_event->evt.gap_evt.params.passkey_display.passkey)
 
-#define PASSKEY_LEN sizeof (p_event->evt.gap_evt.params.passkey_display.passkey)
-
-
-uint32_t ble_gap_evt_passkey_display_dec(uint8_t const * const p_buf,
-                                         uint32_t              packet_len,
-                                         ble_evt_t * const     p_event,
-                                         uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_passkey_display_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                         ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_PASSKEY_DISPLAY, gap, passkey_display);
 
@@ -237,12 +215,8 @@ uint32_t ble_gap_evt_passkey_display_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-
-
-uint32_t ble_gap_evt_rssi_changed_dec(uint8_t const * const p_buf,
-                                      uint32_t              packet_len,
-                                      ble_evt_t * const     p_event,
-                                      uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_rssi_changed_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                      ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_RSSI_CHANGED, gap, rssi_changed);
 
@@ -254,11 +228,8 @@ uint32_t ble_gap_evt_rssi_changed_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-
-uint32_t ble_gap_evt_scan_req_report_dec(uint8_t const * const p_buf,
-                                         uint32_t              packet_len,
-                                         ble_evt_t * const     p_event,
-                                         uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_scan_req_report_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                         ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_SCAN_REQ_REPORT, gap, scan_req_report);
 
@@ -272,36 +243,32 @@ uint32_t ble_gap_evt_scan_req_report_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_sec_info_request_dec(uint8_t const * const p_buf,
-                                          uint32_t              packet_len,
-                                          ble_evt_t * const     p_event,
-                                          uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_sec_info_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                          ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_SEC_INFO_REQUEST, gap, sec_info_request);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.sec_info_request, ble_gap_evt_sec_info_request_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.sec_info_request,
+                   ble_gap_evt_sec_info_request_t_dec);
 
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_sec_params_request_dec(uint8_t const * const p_buf,
-                                            uint32_t              packet_len,
-                                            ble_evt_t * const     p_event,
-                                            uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_sec_params_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                            ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_SEC_PARAMS_REQUEST, gap, sec_params_request);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.sec_params_request, ble_gap_evt_sec_params_request_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.sec_params_request,
+                   ble_gap_evt_sec_params_request_t_dec);
 
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_sec_request_dec(uint8_t const * const p_buf,
-                                     uint32_t              packet_len,
-                                     ble_evt_t * const     p_event,
-                                     uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_sec_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                     ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_SEC_REQUEST, gap, sec_request);
 
@@ -311,10 +278,8 @@ uint32_t ble_gap_evt_sec_request_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_timeout_dec(uint8_t const * const p_buf,
-                                 uint32_t              packet_len,
-                                 ble_evt_t * const     p_event,
-                                 uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_timeout_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                 ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_TIMEOUT, gap, timeout);
 
@@ -323,17 +288,16 @@ uint32_t ble_gap_evt_timeout_dec(uint8_t const * const p_buf,
 #if defined(NRF_SD_BLE_API_VERSION) && (NRF_SD_BLE_API_VERSION > 5) && !defined(S112)
     if (p_event->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
     {
-        SER_PULL_FIELD(&p_event->evt.gap_evt.params.timeout.params.adv_report_buffer, ble_data_t_dec);
+        SER_PULL_FIELD(&p_event->evt.gap_evt.params.timeout.params.adv_report_buffer,
+                       ble_data_t_dec);
     }
 #endif
     SER_EVT_DEC_END;
 }
 
 #if NRF_SD_BLE_API_VERSION >= 5
-uint32_t ble_gap_evt_phy_update_dec(uint8_t const * const p_buf,
-                                   uint32_t              packet_len,
-                                   ble_evt_t * const     p_event,
-                                   uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_phy_update_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                    ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_PHY_UPDATE, gap, phy_update);
 
@@ -345,10 +309,8 @@ uint32_t ble_gap_evt_phy_update_dec(uint8_t const * const p_buf,
     SER_EVT_DEC_END;
 }
 
-uint32_t ble_gap_evt_phy_update_request_dec(uint8_t const * const p_buf,
-                                            uint32_t              packet_len,
-                                            ble_evt_t * const     p_event,
-                                            uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_phy_update_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                            ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_PHY_UPDATE_REQUEST, gap, phy_update);
 
@@ -359,56 +321,55 @@ uint32_t ble_gap_evt_phy_update_request_dec(uint8_t const * const p_buf,
 }
 #endif
 #if NRF_SD_BLE_API_VERSION >= 4 && !defined(S112)
-uint32_t ble_gap_evt_data_length_update_request_dec(uint8_t const * const p_buf,
-                                 uint32_t              packet_len,
-                                 ble_evt_t * const     p_event,
-                                 uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_data_length_update_request_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                                    ble_evt_t *const p_event,
+                                                    uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST, gap, timeout);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.data_length_update_request.peer_params, ble_gap_data_length_params_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.data_length_update_request.peer_params,
+                   ble_gap_data_length_params_t_dec);
 
     SER_EVT_DEC_END;
 }
-uint32_t ble_gap_evt_data_length_update_dec(uint8_t const * const p_buf,
-                                 uint32_t              packet_len,
-                                 ble_evt_t * const     p_event,
-                                 uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_data_length_update_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                            ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_DATA_LENGTH_UPDATE, gap, timeout);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.data_length_update.effective_params, ble_gap_data_length_params_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.data_length_update.effective_params,
+                   ble_gap_data_length_params_t_dec);
 
     SER_EVT_DEC_END;
 }
-#endif //NRF_SD_BLE_API_VERSION >= 4 @@ !defined(S112)
+#endif // NRF_SD_BLE_API_VERSION >= 4 @@ !defined(S112)
 #if NRF_SD_BLE_API_VERSION > 5
 #ifndef S112
-uint32_t ble_gap_evt_qos_channel_survey_report_dec(uint8_t const * const p_buf,
-        uint32_t              packet_len,
-        ble_evt_t * const     p_event,
-        uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_qos_channel_survey_report_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                                   ble_evt_t *const p_event,
+                                                   uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_QOS_CHANNEL_SURVEY_REPORT, gap, qos_channel_survey_report);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_uint8array((uint8_t *)p_event->evt.gap_evt.params.qos_channel_survey_report.channel_energy, BLE_GAP_CHANNEL_COUNT);
+    SER_PULL_uint8array(
+        (uint8_t *)p_event->evt.gap_evt.params.qos_channel_survey_report.channel_energy,
+        BLE_GAP_CHANNEL_COUNT);
 
     SER_EVT_DEC_END;
 }
-#endif //S112
+#endif // S112
 
-uint32_t ble_gap_evt_adv_set_terminated_dec(uint8_t const * const p_buf,
-                                 uint32_t              packet_len,
-                                 ble_evt_t * const     p_event,
-                                 uint32_t * const      p_event_len)
+uint32_t ble_gap_evt_adv_set_terminated_dec(uint8_t const *const p_buf, uint32_t packet_len,
+                                            ble_evt_t *const p_event, uint32_t *const p_event_len)
 {
     SER_EVT_DEC_BEGIN(BLE_GAP_EVT_ADV_SET_TERMINATED, gap, adv_set_terminated);
 
     SER_PULL_uint16(&p_event->evt.gap_evt.conn_handle);
-    SER_PULL_FIELD(&p_event->evt.gap_evt.params.adv_set_terminated, ble_gap_evt_adv_set_terminated_t_dec);
+    SER_PULL_FIELD(&p_event->evt.gap_evt.params.adv_set_terminated,
+                   ble_gap_evt_adv_set_terminated_t_dec);
 
     SER_EVT_DEC_END;
 }

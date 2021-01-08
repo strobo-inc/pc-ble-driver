@@ -46,6 +46,7 @@
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <iostream>
 
 SerializationTransport::SerializationTransport(Transport *dataLinkLayer,
                                                uint32_t response_timeout)
@@ -230,6 +231,15 @@ void SerializationTransport::drainEventQueue()
     }
 }
 
+void check_data(const payload_t&payload){
+    std::cout<<"evt payload size:"<<payload.size()<<std::endl;
+    if(payload.data()!=nullptr){
+        std::cout<<"payload data OK"<<std::endl;
+    }else{
+        std::cout<<"payload data null"<<std::endl;
+    }
+}
+
 // Event Thread
 void SerializationTransport::eventHandlingRunner() noexcept
 {
@@ -269,6 +279,7 @@ void SerializationTransport::eventHandlingRunner() noexcept
                 eventDecodeBuffer.resize(MaxPossibleEventLength);
                 const auto event = reinterpret_cast<ble_evt_t *>(eventDecodeBuffer.data());
 
+                check_data(eventData);//この関数を入れると何故か動く,何らかの未定義動作を踏んでいる恐れが高い
                 // Decode event
                 const auto errCode =
                     ble_event_dec(eventData.data(), eventDataSize, event, &possibleEventLength);
@@ -341,7 +352,7 @@ void SerializationTransport::readHandler(const uint8_t *data, const size_t lengt
         std::copy(startOfData, startOfData + dataLength, std::back_inserter(event));
         std::lock_guard<std::mutex> eventLock(eventMutex);
         eventQueue.push(std::move(event));
-        eventWaitCondition.notify_one();
+        eventWaitCondition.notify_all();
     }
     else
     {
