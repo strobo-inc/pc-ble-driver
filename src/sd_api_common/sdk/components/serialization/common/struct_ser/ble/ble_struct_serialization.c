@@ -54,6 +54,7 @@
 #include "app_ble_gap.h"
 #endif
 #include <string.h>
+#include <stdio.h>
 
 
 uint32_t ble_uuid_t_enc(void const * const p_void_struct,
@@ -481,6 +482,7 @@ uint32_t ble_data_t_enc(void const * const p_void_struct,
     buf_id = conn_ble_gap_ble_data_buf_free(p_struct->p_data);
 #else
     buf_id = app_ble_gap_adv_buf_register(p_struct->p_data);
+    printf("ble_data_t_enc: alloc buf id:%d\n",buf_id);
     SER_ASSERT(buf_id >= 0, NRF_ERROR_NO_MEM);
 #endif
 #endif
@@ -507,6 +509,7 @@ uint32_t ble_data_t_dec(uint8_t const * const p_buf,
         p_struct->p_data = conn_ble_gap_ble_data_buf_alloc(buf_id);
     }
 #else
+    printf("ble_data_t_dec: free buf id:%d\n",buf_id);
     p_struct->p_data = app_ble_gap_adv_buf_unregister(buf_id, true);
 #endif
 #endif
