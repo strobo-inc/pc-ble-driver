@@ -14,7 +14,7 @@ typedef enum{
 class H4Transport :public Transport
 {
 private:
-    UartTransport*next_transport_layer;
+    Transport*next_transport_layer;
     status_cb_t status_cb;
     data_cb_t data_cb;
     static const int H4_HEADER_LENGTH=2;//header is 2byte
@@ -28,7 +28,7 @@ private:
 
 public:
     H4Transport(/* args */)=delete;
-    H4Transport(UartTransport *nextTransportLayer);
+    H4Transport(Transport *nextTransportLayer);
     virtual uint32_t open(const status_cb_t &status_callback, const data_cb_t &data_callback,
                           const log_cb_t &log_callback) noexcept override;
     virtual uint32_t close() noexcept override;
