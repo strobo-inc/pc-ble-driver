@@ -57,8 +57,6 @@ uint32_t H4Transport::send(const std::vector<uint8_t> &data) noexcept
     txpkt[0] = size & 0xff;
     txpkt[1] = (size >> 8) & 0xff;
     std::copy(data.begin(), data.end(), txpkt.begin() + 2);
-    std::cout << "sending" << std::endl;
-    print_vec(data);
     return next_transport_layer->send(txpkt);
 }
 H4Transport::~H4Transport() noexcept
@@ -71,7 +69,6 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
     // std::lock_guard<std::mutex>lk(rx_state_mutex);//一箇所(受信スレッド)からしかこのメソッドは呼ばれないので，mutexかけなくても良い
     size_t data_remain = length;
     size_t read_ptr    = 0;
-    std::cout << "h4 uart rx handler" << std::endl;
     if (length == 0)
     {
         std::cout << "data empty!" << std::endl;
@@ -92,8 +89,6 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
             {
                 rx_header |= data[read_ptr++] << 8;
                 data_remain--;
-                std::cout << "header rx complete:" << std::setw(4) << std::setfill('0') << std::hex
-                          << rx_header << std::endl;
                 rx_counter = 0;
                 rx_packet.clear();
                 rx_packet.reserve(rx_header);
@@ -116,11 +111,8 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
             if (rx_counter == rx_header)
             {
                 // payload complete
-                std::cout << "rx payload complete" << std::endl;
-                print_vec(rx_packet);
                 rx_state = RX_STATE_WAIT_HEADER;
                 upperDataCallback(rx_packet.data(), rx_packet.size());
-                std::cout << "rx callback finished" << std::endl;
             }
         }
     }

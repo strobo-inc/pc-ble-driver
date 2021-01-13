@@ -279,7 +279,6 @@ void SerializationTransport::eventHandlingRunner() noexcept
                 eventDecodeBuffer.resize(MaxPossibleEventLength);
                 const auto event = reinterpret_cast<ble_evt_t *>(eventDecodeBuffer.data());
 
-                check_data(eventData);//この関数を入れると何故か動く,何らかの未定義動作を踏んでいる恐れが高い
                 // Decode event
                 const auto errCode =
                     ble_event_dec(eventData.data(), eventDataSize, event, &possibleEventLength);
