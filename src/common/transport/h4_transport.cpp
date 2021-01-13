@@ -57,6 +57,8 @@ uint32_t H4Transport::send(const std::vector<uint8_t> &data) noexcept
     txpkt[0] = size & 0xff;
     txpkt[1] = (size >> 8) & 0xff;
     std::copy(data.begin(), data.end(), txpkt.begin() + 2);
+    std::cout<<"send"<<std::endl;
+    print_vec(data);
     return next_transport_layer->send(txpkt);
 }
 H4Transport::~H4Transport() noexcept
@@ -112,6 +114,8 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
             {
                 // payload complete
                 rx_state = RX_STATE_WAIT_HEADER;
+                std::cout<<"recv"<<std::endl;
+                print_vec(rx_packet);
                 upperDataCallback(rx_packet.data(), rx_packet.size());
             }
         }
