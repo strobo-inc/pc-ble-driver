@@ -592,12 +592,16 @@ int app_ble_gap_adv_buf_addr_unregister(void *p_buf)
     }
 }
 
-void *app_ble_gap_adv_buf_unregister(const int id, const bool event_context)
-{
-    std::unique_lock<std::mutex> lck(event_context
-                                         ? current_event_context.adapter_id_mutex
-                                         : current_request_reply_context.adapter_id_mutex);
 
+/*
+app_ble_gap_adv_buf_unregister_internal
+unregister buffer
+precond:
+it should be protected by adapter_id_mutex
+*/
+
+static void *app_ble_gap_adv_buf_unregister_internal(const int id, const bool event_context)
+{
     if (!app_ble_gap_check_current_adapter_set(event_context ? EVENT_CODEC_CONTEXT
                                                              : REQUEST_REPLY_CODEC_CONTEXT))
     {
@@ -631,6 +635,14 @@ void *app_ble_gap_adv_buf_unregister(const int id, const bool event_context)
     }
 
     return ret;
+}
+
+void *app_ble_gap_adv_buf_unregister(const int id, const bool event_context)
+{
+    std::unique_lock<std::mutex> lck(event_context
+                                         ? current_event_context.adapter_id_mutex
+                                         : current_request_reply_context.adapter_id_mutex);
+    return app_ble_gap_adv_buf_unregister_internal(id, event_context);
 }
 
 static void app_ble_gap_ble_data_mark_dirty(uint8_t *p_buf)
@@ -759,7 +771,7 @@ void app_ble_gap_scan_data_unset(bool free)
         {
             if (free)
             {
-                app_ble_gap_adv_buf_unregister(gap_state->scan_data_id, false);
+                app_ble_gap_adv_buf_unregister_internal(gap_state->scan_data_id, false);
             }
             gap_state->scan_data_id = 0;
         }

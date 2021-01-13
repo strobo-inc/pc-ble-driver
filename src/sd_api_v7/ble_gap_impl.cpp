@@ -47,6 +47,7 @@
 #include "app_ble_gap.h"
 
 #include <cstdint>
+#include <iostream>
 
 static void *mp_out_params[3];
 
@@ -514,6 +515,11 @@ uint32_t sd_ble_gap_scan_start(adapter_t *adapter, ble_gap_scan_params_t const *
         if (err_code != NRF_SUCCESS)
         {
             app_ble_gap_scan_data_unset(true);
+        }
+        if(*result != NRF_SUCCESS){
+            std::cout<<"scan start resp fail. unset buffer"<<std::endl;
+            app_ble_gap_scan_data_unset(true);//if rpc returned fail, free scan data. 
+            std::cout<<"unset complete"<<std::endl;
         }
 
         return err_code;
