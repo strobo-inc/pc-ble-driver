@@ -478,7 +478,7 @@ uint32_t ble_gap_evt_connected_t_dec(uint8_t const * const p_buf,
     SER_PULL_FIELD(&p_struct->conn_params, ble_gap_conn_params_t_dec);
 #if defined(NRF_SD_BLE_API_VERSION) && NRF_SD_BLE_API_VERSION > 5
     SER_PULL_uint8(&p_struct->adv_handle);
-    SER_PULL_FIELD(&p_struct->adv_data, ble_gap_adv_data_t_empty_dec);
+    SER_PULL_FIELD(&p_struct->adv_data, ble_gap_adv_data_t_dec);
 #endif
 
     SER_STRUCT_DEC_END;
