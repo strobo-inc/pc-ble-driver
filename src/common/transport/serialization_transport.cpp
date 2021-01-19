@@ -43,13 +43,12 @@
 
 #include "ble_common.h"
 
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <sstream>
-#include <iostream>
 
-SerializationTransport::SerializationTransport(Transport *dataLinkLayer,
-                                               uint32_t response_timeout)
+SerializationTransport::SerializationTransport(Transport *dataLinkLayer, uint32_t response_timeout)
     : statusCallback(nullptr)
     , eventCallback(nullptr)
     , logCallback(nullptr)
@@ -231,12 +230,16 @@ void SerializationTransport::drainEventQueue()
     }
 }
 
-void check_data(const payload_t&payload){
-    std::cout<<"evt payload size:"<<payload.size()<<std::endl;
-    if(payload.data()!=nullptr){
-        std::cout<<"payload data OK"<<std::endl;
-    }else{
-        std::cout<<"payload data null"<<std::endl;
+void check_data(const payload_t &payload)
+{
+    std::cout << "evt payload size:" << payload.size() << std::endl;
+    if (payload.data() != nullptr)
+    {
+        std::cout << "payload data OK" << std::endl;
+    }
+    else
+    {
+        std::cout << "payload data null" << std::endl;
     }
 }
 
@@ -314,6 +317,10 @@ void SerializationTransport::eventHandlingRunner() noexcept
 
 void SerializationTransport::readHandler(const uint8_t *data, const size_t length)
 {
+    if (data == nullptr || length == 0)
+    {
+        return;
+    }
     const auto eventType = static_cast<serialization_pkt_type_t>(data[0]);
 
     const auto startOfData  = data + 1;

@@ -8,6 +8,8 @@ H4Transport::H4Transport(Transport *nextTransportLayer)
     : is_open(false)
     , next_transport_layer(nextTransportLayer)
     , rx_state(RX_STATE_WAIT_HEADER)
+    , rx_header(0)
+    , rx_counter(0)
 {
     std::cout << "h4 transport layer created" << std::endl;
 }
@@ -27,6 +29,7 @@ uint32_t H4Transport::open(const status_cb_t &status_callback, const data_cb_t &
     data_cb =
         std::bind(&H4Transport::data_handler, this, std::placeholders::_1, std::placeholders::_2);
     retcode = next_transport_layer->open(upperStatusCallback, data_cb, upperLogCallback);
+    is_open = true;
     std::cout << "h4 transport opened:" << retcode << std::endl;
     return retcode;
 }
@@ -36,6 +39,7 @@ uint32_t H4Transport::close() noexcept
     {
         return NRF_ERROR_SD_RPC_SERIAL_PORT_ALREADY_CLOSED;
     }
+    is_open = false;
     return next_transport_layer->close();
 }
 
