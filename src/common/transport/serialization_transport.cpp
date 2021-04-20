@@ -295,7 +295,7 @@ void SerializationTransport::eventHandlingRunner() noexcept
                 {
                     std::stringstream logMessage;
                     logMessage << "Failed to decode event, error code is " << std::dec << errCode
-                               << "/0x" << std::hex << errCode << ".";
+                               << "/0x" << std::hex << errCode << "event code is"<<std::dec<<event->header.evt_id<<"/0x"<<std::hex<<event->header.evt_id<<".";
                     logCallback(SD_RPC_LOG_ERROR, logMessage.str());
                     statusCallback(PKT_DECODE_ERROR, logMessage.str());
                 }

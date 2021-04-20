@@ -10,6 +10,8 @@ H4Transport::H4Transport(Transport *nextTransportLayer)
     , rx_state(RX_STATE_WAIT_HEADER)
     , rx_header(0)
     , rx_counter(0)
+    , rx_pkt_count(0)
+    , tx_pkt_count(0)
 {
     std::cout << "h4 transport layer created" << std::endl;
 }
@@ -56,6 +58,9 @@ void print_vec(const std::vector<uint8_t> v)
 
 uint32_t H4Transport::send(const std::vector<uint8_t> &data) noexcept
 {
+    std::cout << "send (" << ++tx_pkt_count << "):";
+    print_vec(data);
+    std::cout << std::endl;
     uint16_t size = data.size();
     std::vector<uint8_t> txpkt(size + 2);
     txpkt[0] = size & 0xff;
@@ -116,6 +121,9 @@ void H4Transport::data_handler(const uint8_t *data, const size_t length) noexcep
             {
                 // payload complete
                 rx_state = RX_STATE_WAIT_HEADER;
+                std::cout << "recv(" << ++rx_pkt_count << "):";
+                print_vec(rx_packet);
+                std::cout << std::endl;
                 upperDataCallback(rx_packet.data(), rx_packet.size());
             }
         }

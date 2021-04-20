@@ -25,6 +25,8 @@ private:
     uint16_t rx_counter;
     h4_rx_state_t rx_state;
     std::mutex rx_state_mutex;
+    int tx_pkt_count;
+    int rx_pkt_count;
 
 public:
     H4Transport(/* args */)=delete;

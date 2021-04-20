@@ -55,6 +55,7 @@
 #include "uart_settings_boost.h"
 #include <asio.hpp>
 #include <iostream>
+#include <atomic>
 
 constexpr auto DELAY_BEFORE_READ_WRITE = std::chrono::milliseconds(200);
 
@@ -76,7 +77,7 @@ struct UartTransport::impl : Transport
     std::function<void(const asio::error_code, const size_t)> callbackWriteHandle;
 
     UartSettingsBoost uartSettingsBoost;
-    bool asyncWriteInProgress;
+    std::atomic_bool asyncWriteInProgress;
     std::unique_ptr<std::thread> ioServiceThread;
 
     std::unique_ptr<asio::io_service> ioService;

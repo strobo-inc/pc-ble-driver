@@ -319,7 +319,7 @@ uint32_t ble_event_dec(uint8_t const * const p_buf,
     }
 
     *p_event_len += offsetof(ble_evt_t, evt);
-    p_event->header.evt_id  = (err_code == NRF_SUCCESS) ? event_id : 0;
+    p_event->header.evt_id  = event_id;//(err_code == NRF_SUCCESS) ? event_id : 0;
     p_event->header.evt_len = (err_code == NRF_SUCCESS) ? (uint16_t)*p_event_len : 0;
 
     return err_code;
