@@ -297,7 +297,9 @@ else()
 endif()
 
 # Add install target
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 include(cmake/install-target.cmake)
+endif()
 
 include (cmake/clang-dev-tools.cmake)
 
