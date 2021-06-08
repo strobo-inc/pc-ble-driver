@@ -302,6 +302,7 @@ include(cmake/install-target.cmake)
 include (cmake/clang-dev-tools.cmake)
 
 # Create package
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 set(ARCH_SUFFIX "unknown")
 
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
@@ -328,3 +329,4 @@ endif()
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${NRF_BLE_DRIVER_VERSION}-${OS_SUFFIX}_${ARCH_SUFFIX}")
 
 include(CPack)
+endif()
