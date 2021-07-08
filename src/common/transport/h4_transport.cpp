@@ -5,13 +5,14 @@
 #include <iostream>
 
 H4Transport::H4Transport(Transport *nextTransportLayer)
-    : is_open(false)
-    , next_transport_layer(nextTransportLayer)
-    , rx_state(RX_STATE_WAIT_HEADER)
+    : next_transport_layer(nextTransportLayer)
+    , is_open(false)
     , rx_header(0)
     , rx_counter(0)
-    , rx_pkt_count(0)
+    , rx_state(RX_STATE_WAIT_HEADER)
     , tx_pkt_count(0)
+    , rx_pkt_count(0)
+    
 {
     std::cout << "h4 transport layer created" << std::endl;
 }

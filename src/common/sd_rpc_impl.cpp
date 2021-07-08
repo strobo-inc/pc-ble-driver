@@ -66,6 +66,8 @@ uint32_t sd_rpc_serial_port_enum(sd_rpc_serial_port_desc_t serial_port_descs[], 
     *size = static_cast<uint32_t>(descs.size());
 
     auto i = 0;
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-truncation"
     for (auto &desc : descs)
     {
         strncpy(serial_port_descs[i].port, desc.comName.c_str(), SD_RPC_MAXPATHLEN);
@@ -77,6 +79,7 @@ uint32_t sd_rpc_serial_port_enum(sd_rpc_serial_port_desc_t serial_port_descs[], 
         strncpy(serial_port_descs[i].productId, desc.productId.c_str(), SD_RPC_MAXPATHLEN);
         ++i;
     }
+    #pragma GCC diagonostic pop
 
     return NRF_SUCCESS;
 }
